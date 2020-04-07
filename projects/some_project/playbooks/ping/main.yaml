@@ -1,12 +1,30 @@
+- name: Define inventario dinamico
+  hosts: localhost
+  connection: local
+  become: false
+  gather_facts: false
+  
+  tasks:
+  - name: adiciona_hosts dinamicos
+    add_host:
+      name: "{{ item }}"
+      groups: telnet_client
+    with_items:
+      - "{{ Origem.split(',') }}"
 
-- hosts: target_hosts
+- name: Testa telnet
+  hosts: telnet_client
+  gather_facts: false
 
   tasks:
+  - name: Check port numbers are accessible from current host
+    wait_for:
+      host: "{{ Destino }}"
+      port: "{{ Porta }}"
+      state: started         # Port should be open
+      delay: 0               # No wait before first check (sec)
+      timeout: 3             # Stop checking after timeout (sec)
+    ignore_errors: yes
+    register: telnet
 
-    - name: Check target host
-      ping:
-
-    - name: Display distribution info
-      debug:
-        var: ansible_distribution
-
+  - debug: msg="Concluido" 
